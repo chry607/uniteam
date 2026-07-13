@@ -27,6 +27,14 @@ func load_random_minigame() -> void:
 	
 	current_minigame = selected_game.instantiate()
 	
+	# Connect the early failure signal if the minigame script supports it
+	if current_minigame.has_signal("game_over_early"):
+		current_minigame.game_over_early.connect(_on_minigame_lost_early)
+		
+	# Connect the early victory signal if the minigame script supports it
+	if current_minigame.has_signal("game_won_early"):
+		current_minigame.game_won_early.connect(_on_minigame_won_early)
+	
 	# Linear speed scaling: speed increases by 10% per point scored.
 	var speed_scale: float = 1.0 + (Global.score * 0.1)
 	
@@ -64,6 +72,14 @@ func _process(_delta: float) -> void:
 		time_bar.value = timer.time_left
 	else:
 		time_bar.hide()
+
+func _on_minigame_lost_early() -> void:
+	timer.stop()
+	_on_timer_timeout()
+
+func _on_minigame_won_early() -> void:
+	timer.stop()
+	_on_timer_timeout()
 
 func _on_timer_timeout() -> void:
 	var passed: bool = current_minigame.player_won

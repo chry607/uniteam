@@ -1,7 +1,6 @@
-# main_menu.gd
 extends Control
 
-# Path to your actual game manager scene
+# Path to game manager scene
 @export var game_scene: PackedScene = preload("res://manager/game_manager.tscn")
 
 @onready var background = $background

@@ -1,5 +1,8 @@
 extends Control
 
+# Signal to end the round immediately upon winning
+signal game_won_early
+
 var instruction_text: String = "CLICK FAST!"
 var player_won: bool = false
 
@@ -24,3 +27,6 @@ func _on_button_pressed() -> void:
 	button.text = "GOOD JOB!"
 	button.modulate = Color.GREEN
 	button.disabled = true
+
+	# Emit the signal
+	game_won_early.emit()
