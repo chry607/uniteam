@@ -1,15 +1,26 @@
 extends Control
 
 var instruction_text: String = "DO NOTHING!"
-
-# The player defaults to winning, as long as they don't touch anything!
 var player_won: bool = true
+
+# Base stats
+var base_duration: float = 4.0 
+var speed: float = 1.0
+
 @onready var button = $Button
 
-func _on_button_pressed():
-	# should not be pressed!
+func setup_speed(speed_scale: float) -> void:
+	speed = speed_scale
+	
+	if not is_node_ready():
+		await ready
+
+func _on_button_pressed() -> void:
+	if not player_won:
+		return
+		
 	player_won = false
 	
 	button.text = "YOU FAILED!"
-	button.modulate = Color.RED # Turns the button red
+	button.modulate = Color.RED
 	button.disabled = true
