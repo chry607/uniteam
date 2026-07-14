@@ -33,9 +33,6 @@ func project(global_pos: Vector2) -> Dictionary:
 	return {"t": t, "distance": local_pos.distance_to(closest)}
 
 # Returns: "trap", "too_close", "cut", "severed"
-
-# (caller already confirmed the click is close enough to this wire)
-
 func try_cut(global_pos: Vector2) -> String:
 	var p = project(global_pos)
 	
@@ -47,6 +44,7 @@ func try_cut(global_pos: Vector2) -> String:
 	for existing_t in cut_ts:
 		if abs(p.t - existing_t) < min_cut_separation:
 			return "too_close"
+	
 	cut_ts.append(p.t)
 	_redraw_segments()          # <-- changed from queue_redraw()
 	if cut_ts.size() >= cuts_needed:
