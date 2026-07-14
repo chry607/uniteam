@@ -126,7 +126,6 @@ func _setup_camera() -> void:
 	camera.zoom = Vector2(0.9, 0.9)
 	add_child(camera)
 	camera.make_current()
-	# Notice we removed all the camera margin properties here!
 
 func _spawn_player() -> void:
 	player = PlayerPawn.new()
@@ -134,7 +133,7 @@ func _spawn_player() -> void:
 	player.died.connect(_on_player_died)
 	add_child(player)
 	player.position = Vector2.ZERO
-	# DO NOT add the camera as a child of the player!
+
 # ---------- Lane generation ----------
 
 func _generate_lane(row: int) -> void:
@@ -155,7 +154,7 @@ func _generate_lane(row: int) -> void:
 		else:
 			lane.lane_type = RoadLane.LaneType.ROAD
 			lane.direction = 1 if randi() % 2 == 0 else -1
-			lane.speed = randf_range(130, 280) # Speed updated for higher tension
+			lane.speed = randf_range(130, 280) 
 			lane.spawn_interval = randf_range(0.8, 1.6)
 			lane.vehicle_types = [
 				RoadVehicle.VehicleType.JEEPNEY,
@@ -175,7 +174,12 @@ func _on_player_moved(row: int) -> void:
 	lanes_label.text = "Lanes: %d / 10" % clampi(row, 0, TARGET_ROW)
 	
 	if row >= TARGET_ROW:
-		_on_player_won()
+		# Wait for the exact duration of the player's movement animation
+		await get_tree().create_timer(player.MOVE_TIME).timeout
+		
+		# Make sure they didn't die while landing on the tile!
+		if not game_over:
+			_on_player_won()
 
 func _on_player_died() -> void:
 	if game_over or won:
