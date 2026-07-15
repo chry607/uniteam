@@ -11,6 +11,24 @@ one_shot = true
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=1061220141]
 
+[node name="Life1" type="TextureRect" parent="UI" unique_id=209594463]
+offset_left = 311.0
+offset_top = 80.0
+offset_right = 351.0
+offset_bottom = 120.0
+
+[node name="Life2" type="TextureRect" parent="UI" unique_id=374908200]
+offset_left = 537.0
+offset_top = 83.0
+offset_right = 577.0
+offset_bottom = 123.0
+
+[node name="Life3" type="TextureRect" parent="UI" unique_id=493264154]
+offset_left = 720.0
+offset_top = 87.0
+offset_right = 760.0
+offset_bottom = 127.0
+
 [node name="TimeBar" type="ProgressBar" parent="UI" unique_id=529554884]
 anchors_preset = 5
 anchor_left = 0.5
@@ -23,7 +41,7 @@ grow_horizontal = 2
 value = 3.0
 show_percentage = false
 
-[node name="LivesLabel" type="Label" parent="UI" unique_id=1780735607]
+[node name="ScoreLabel" type="Label" parent="UI" unique_id=1780735607]
 offset_left = 404.0
 offset_top = 316.0
 offset_right = 738.0
@@ -40,5 +58,18 @@ offset_bottom = 321.0
 theme_override_font_sizes/font_size = 50
 text = "WELCOME HSADHAHD"
 horizontal_alignment = 1
+
+[node name="LivesContainer" type="HBoxContainer" parent="UI" unique_id=1829268069]
+offset_left = 551.0
+offset_top = 197.0
+offset_right = 591.0
+offset_bottom = 237.0
+
+[node name="TryAgainButton" type="Button" parent="UI" unique_id=1564802154]
+offset_left = 445.0
+offset_top = 508.0
+offset_right = 685.0
+offset_bottom = 558.0
+text = "Try Again"
 
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

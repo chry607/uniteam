@@ -45,7 +45,8 @@ func _process(delta: float) -> void:
 			_process_rail(delta)
 
 func _spawn_vehicle() -> void:
-	var v := RoadVehicle.new()
+	var vehicle_script = preload("res://crossy-road/scripts/Vehicle.gd")
+	var v = vehicle_script.new()
 	v.vehicle_type = vehicle_types[randi() % vehicle_types.size()]
 	v.speed = speed
 	v.direction = direction

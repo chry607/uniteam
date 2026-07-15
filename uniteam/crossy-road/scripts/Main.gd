@@ -1,5 +1,7 @@
 extends Node2D
 
+signal game_finished(result: String)
+
 const TILE_SIZE := 100
 
 var lanes := {}
@@ -10,7 +12,7 @@ var won := false
 var time_left := 20.0 # 12 seconds to survive/finish
 const TARGET_ROW := 10
 
-var player: PlayerPawn
+var player
 var camera: Camera2D
 var camera_target := Vector2.ZERO
 
@@ -111,7 +113,6 @@ func _build_ui() -> void:
 	restart_btn.set_anchors_preset(Control.PRESET_CENTER)
 	restart_btn.position = Vector2(-100, 40)
 	restart_btn.size = Vector2(200, 50)
-	restart_btn.pressed.connect(_on_restart_pressed)
 	game_over_panel.add_child(restart_btn)
 
 func _update_ui() -> void:
@@ -128,7 +129,8 @@ func _setup_camera() -> void:
 	camera.make_current()
 
 func _spawn_player() -> void:
-	player = PlayerPawn.new()
+	var player_script = preload("res://crossy-road/scripts/Player.gd")
+	player = player_script.new()
 	player.moved.connect(_on_player_moved)
 	player.died.connect(_on_player_died)
 	add_child(player)
@@ -139,29 +141,25 @@ func _spawn_player() -> void:
 func _generate_lane(row: int) -> void:
 	if lanes.has(row):
 		return
-	var lane := RoadLane.new()
+	var lane_script = preload("res://crossy-road/scripts/Lane.gd")
+	var lane := lane_script.new()
 	lane.row = row
 	
 	# Start and end lanes are strictly SAFE.
 	if row <= 0 or row >= TARGET_ROW:
-		lane.lane_type = RoadLane.LaneType.SAFE
+		lane.lane_type = 0
 	else:
 		var roll := randf()
 		if roll < 0.15:
-			lane.lane_type = RoadLane.LaneType.SAFE
+			lane.lane_type = 0
 		elif roll < 0.30:
-			lane.lane_type = RoadLane.LaneType.RAIL
+			lane.lane_type = 2
 		else:
-			lane.lane_type = RoadLane.LaneType.ROAD
+			lane.lane_type = 1
 			lane.direction = 1 if randi() % 2 == 0 else -1
 			lane.speed = randf_range(130, 280) 
 			lane.spawn_interval = randf_range(0.8, 1.6)
-			lane.vehicle_types = [
-				RoadVehicle.VehicleType.JEEPNEY,
-				RoadVehicle.VehicleType.TRICYCLE,
-				RoadVehicle.VehicleType.MULTICAB,
-				RoadVehicle.VehicleType.MOTORCYCLE
-			]
+			lane.vehicle_types = [0, 1, 2, 3]
 	add_child(lane)
 	lanes[row] = lane
 
@@ -185,39 +183,19 @@ func _on_player_died() -> void:
 	if game_over or won:
 		return
 	game_over = true
-	final_message_label.text = "Dumb Way to Die!\nYou were flattened!"
-	
-	# Color background Coral Red on death
-	var bg = game_over_panel.get_child(0) as ColorRect
-	if bg:
-		bg.color = Color8(255, 107, 107, 230)
-		
-	game_over_panel.visible = true
-	get_tree().paused = true
+	game_finished.emit("lose") # Tell the manager you died. NO PAUSING!
 
 func _on_time_out() -> void:
 	if game_over or won:
 		return
 	game_over = true
-	final_message_label.text = "Dumb Way to Die!\nTime ran out!"
-	
-	var bg = game_over_panel.get_child(0) as ColorRect
-	if bg:
-		bg.color = Color8(255, 107, 107, 230)
-		
-	game_over_panel.visible = true
-	get_tree().paused = true
+	game_finished.emit("lose")
 
 func _on_player_won() -> void:
+	if won or game_over:
+		return
 	won = true
-	final_message_label.text = "Dumb Victory!\nYou Survived!"
-	
-	var bg = game_over_panel.get_child(0) as ColorRect
-	if bg:
-		bg.color = Color8(47, 207, 183, 230) # Pastel Teal
-		
-	game_over_panel.visible = true
-	get_tree().paused = true
+	game_finished.emit("win")
 
 func _on_restart_pressed() -> void:
 	get_tree().paused = false

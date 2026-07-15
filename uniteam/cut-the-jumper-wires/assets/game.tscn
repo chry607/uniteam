@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://b611i6ochyu4j"]
 
-[ext_resource type="Script" uid="uid://dssk547y0f4qj" path="res://assets/game.gd" id="1_0aill"]
+[ext_resource type="Script" uid="uid://dssk547y0f4qj" path="res://cut-the-jumper-wires/assets/game.gd" id="1_0aill"]
 
 [sub_resource type="GDScript" id="GDScript_f3fhv"]
 script/source = "extends Node2D

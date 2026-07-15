@@ -1,5 +1,7 @@
 extends Node2D
 
+signal game_finished(result: String)
+
 # --- Game Tuning Settings ---
 var max_balance: float = 100.0
 var min_balance: float = 0.0
@@ -14,21 +16,24 @@ var is_game_over: bool = false
 var is_won: bool = false
 
 # --- Component References ---
-var environment: TrainEnvironment
-var player: PlayerCharacter
-var ui: GameUI
+var environment
+var player
+var ui
 var survival_timer: Timer
 var jerk_timer: Timer
 
 func _ready() -> void:
 	# 1. Instantiate Components (Pure Code, No Drag and Drop)
-	environment = TrainEnvironment.new()
+	var environment_script = preload("res://lrt-balance/environment.gd")
+	environment = environment_script.new()
 	add_child(environment)
 	
-	player = PlayerCharacter.new()
+	var player_script = preload("res://lrt-balance/player.gd")
+	player = player_script.new()
 	add_child(player)
 	
-	ui = GameUI.new()
+	var ui_script = preload("res://lrt-balance/ui.gd")
+	ui = ui_script.new()
 	add_child(ui)
 	
 	# 2. Setup Timers
@@ -92,12 +97,15 @@ func _on_input_right() -> void:
 
 # --- GAME EVENTS ---
 func trigger_game_over() -> void:
+	if is_game_over or is_won:
+		return
 	is_game_over = true
 	survival_timer.stop()
 	jerk_timer.stop()
 	
 	ui.show_game_over()
 	player.fall_over(balance)
+	game_finished.emit("lose")
 
 func _on_survival_timer_timeout() -> void:
 	if is_game_over: return
@@ -106,6 +114,7 @@ func _on_survival_timer_timeout() -> void:
 	
 	ui.show_victory()
 	player.celebrate_win()
+	game_finished.emit("win")
 
 func _on_train_jerk_timer_timeout() -> void:
 	if is_game_over or is_won: return
