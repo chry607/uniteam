@@ -6,7 +6,7 @@ const ENTRIES: Array[Dictionary] = [
 	{
 		"id": "cut_wires",
 		"display_name": "Cut the Jumper Wires!",
-		"intro": "Don't cut the wrong wire!",
+		"intro": "Only cut the red wires!",
 		"scene": "res://minigames/cut-the-jumper-wires/game_wire.tscn",
 	},
 	{
