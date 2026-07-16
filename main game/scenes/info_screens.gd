@@ -74,8 +74,7 @@ func _ready() -> void:
 func show_how_to() -> void:
 	_mode = Mode.HOW_TO
 	_title.text = "HOW TO PLAY"
-	_body.text = """[center][b]Bilis! Bilis![/b]
-Survive as many dumb Pinoy situations as you can.
+	_body.text = """[center]Survive as many dumb Pinoy situations as you can.
 
 [b]General Movement[/b]
 Arrow keys or WASD — move up, down, left, right
