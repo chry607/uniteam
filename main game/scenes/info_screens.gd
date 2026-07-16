@@ -75,17 +75,23 @@ func show_how_to() -> void:
 	_mode = Mode.HOW_TO
 	_title.text = "HOW TO PLAY"
 	_body.text = """[center][b]Bilis! Bilis![/b]
-
 Survive as many dumb Pinoy situations as you can.
 
-• Each minigame is [b]short[/b] — act fast!
-• Follow the prompt on screen
-• Don't lose all your [color=#4DA6FF]bean lives[/color]
-• Chain wins for [color=#E06A20]combos[/color]
+[b]General Movement[/b]
+Arrow keys or WASD — move up, down, left, right
+[ESC] Pause during a run
 
-[b]Controls[/b]
-Keyboard and mouse
-[ESC] Pause during a run[/center]"""
+[b]Patinteroad[/b]
+Cross the 10-lane EDSA Shaw highway without getting flattened by jeepneys and kamote tricycles.
+[i]Controls:[/i] Arrow keys or WASD
+
+[b]MRT Center of Gravity[/b]
+Rush hour in Cubao — no handrail, packed like sardines. Keep your balance as the train swerves left and right.
+[i]Controls:[/i] ← / → to shift balance
+
+[b]Oplan Tanggal Kable[/b]
+Your Meralco bill jumped 5x. Cut only the illegal red jumper wires before time runs out — wrong wire and ZZZAP!
+[i]Controls:[/i] Click twice on a wire to cut (point A → point B)[/center]"""
 	_open()
 
 
