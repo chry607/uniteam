@@ -22,6 +22,7 @@ script = ExtResource("2_31uvl")
 
 [node name="music" type="AudioStreamPlayer2D" parent="." unique_id=1127721240]
 stream = ExtResource("1_qpnks")
+volume_db = -5.0
 
 [node name="crash" type="AudioStreamPlayer2D" parent="." unique_id=1355513044]
 stream = SubResource("AudioStreamWAV_e6jji")
