@@ -70,7 +70,7 @@ func play(phrase: String = "") -> void:
 	await tw.finished
 
 	# Hold with wiggle
-	var hold := 0.35 + randf() * 0.25
+	var hold := 2.0 + randf() * 0.4
 	var t0 := Time.get_ticks_msec()
 	while (Time.get_ticks_msec() - t0) / 1000.0 < hold:
 		_phrase.rotation = sin(Time.get_ticks_msec() * 0.03) * 0.08
