@@ -47,7 +47,7 @@ var difficulty_level: int = 0
 
 func set_difficulty(level: int) -> void:
 	difficulty_level = clampi(level, 0, 5) # Capped at 5
-	speed = min(1.0 + (difficulty_level * 0.25), 2.25)
+	speed = min(1.0 + (difficulty_level * 0.125), 2.25)
 	target_wire_count = min(3 + difficulty_level, 8)
 	trap_wire_count = min(8 + (difficulty_level * 2), 18)
 

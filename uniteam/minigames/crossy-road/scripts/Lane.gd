@@ -91,7 +91,12 @@ func _spawn_train_hazard() -> void:
 func _draw() -> void:
 	match lane_type:
 		LaneType.SAFE:
-			if row == 10:
+			# --- DYNAMIC FIX: Ask the main scene where the finish line is ---
+			var final_row := 10
+			if get_parent() and "target_row" in get_parent():
+				final_row = get_parent().target_row
+				
+			if row == final_row:
 				# Draw a fun "Dumb Ways to Die" checkered finish line!
 				draw_rect(Rect2(-800, -50, 1600, 100), Color8(255, 215, 0)) # Gold base
 				var x := -750
@@ -103,14 +108,20 @@ func _draw() -> void:
 					x += 100
 			else:
 				draw_rect(Rect2(-800, -50, 1600, 100), Color8(120, 190, 110))
+				
 		LaneType.ROAD:
+			# Draws the dark grey road base
 			draw_rect(Rect2(-800, -50, 1600, 100), Color8(70, 70, 75))
 			var x := -750
+			# Draws the yellow dashed lines!
 			while x < 800:
 				draw_rect(Rect2(x, -4, 50, 8), Color8(230, 200, 60))
 				x += 100
+				
 		LaneType.RAIL:
+			# Draws the dirt/gravel base
 			draw_rect(Rect2(-800, -50, 1600, 100), Color8(150, 130, 90))
+			# Draws the iron rails
 			draw_rect(Rect2(-800, -8, 1600, 16), Color8(90, 90, 90))
 			if rail_state == "warning":
 				if int(warning_timer * 6) % 2 == 0:

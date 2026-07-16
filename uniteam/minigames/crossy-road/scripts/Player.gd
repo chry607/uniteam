@@ -58,8 +58,13 @@ func _try_move(dx: int, dy: int) -> void:
 	# Clamps strictly prevent the player from walking off the left/right screen edges
 	var new_x: int = clamp(grid_x + dx, MIN_COL, MAX_COL)
 	
-	# Clamps strictly prevent the player from walking past Start (0) or Finish (-10)
-	var new_y: int = clamp(grid_y + dy, -10, 0) 
+	# --- DYNAMIC FIX: Get the maximum allowed rows from the main scene ---
+	var final_row := 10
+	if get_parent() and "target_row" in get_parent():
+		final_row = get_parent().target_row
+		
+	# Clamps strictly prevent the player from walking past Start (0) or Finish
+	var new_y: int = clamp(grid_y + dy, -final_row, 0) 
 	
 	if new_x == grid_x and new_y == grid_y:
 		return

@@ -27,7 +27,7 @@ var final_message_label: Label
 
 func set_difficulty(level: int) -> void:
 	difficulty_level = clampi(level, 0, 5) # Cap at 5
-	time_left = max(20.0 - (difficulty_level * 1.5), 12.5) # Minimum 12.5 seconds
+	time_left = max(20.0 - (difficulty_level * 1.25), 12.5) # Minimum 12.5 seconds
 	target_row = min(10 + (difficulty_level * 2), 20) # Max 20 rows to cross
 	lane_speed_mult = 1.0 + (difficulty_level * 0.15) # Up to 75% faster cars
 	spawn_interval_mult = max(1.0 - (difficulty_level * 0.1), 0.5) # Cars spawn up to twice as fast

@@ -28,8 +28,8 @@ func set_difficulty(level: int) -> void:
 	difficulty_level = clampi(level, 0, 5)
 	
 	# Scale variables based on difficulty
-	passive_drift = min(10.0 + (difficulty_level * 3.0), 25.0)
-	jerk_strength = min(16.0 + (difficulty_level * 2.0), 26.0)
+	passive_drift = min(10.0 + (difficulty_level * 2), 25.0)
+	jerk_strength = min(16.0 + (difficulty_level * 1), 26.0)
 	recovery_force = max(12.0 - (difficulty_level * 0.5), 9.5)
 
 func _ready() -> void:
