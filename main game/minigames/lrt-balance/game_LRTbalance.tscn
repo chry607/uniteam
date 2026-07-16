@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dye4i4r36jfcu"]
+
+[ext_resource type="Script" uid="uid://bnk3ju3i7ooql" path="res://minigames/lrt-balance/game_LRTbalance.gd" id="1_wcro2"]
+
+[node name="LRTBalance" type="Node2D" unique_id=2001294048]
+script = ExtResource("1_wcro2")

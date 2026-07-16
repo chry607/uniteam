@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://b2vdcp5lh0axa"]
+
+[ext_resource type="Script" uid="uid://bsqhmnrj6y2nj" path="res://minigames/cut-the-jumper-wires/game_wire.gd" id="1_3qq3a"]
+[ext_resource type="Texture2D" uid="uid://d0w5kujb14l7t" path="res://assets/wires-assets/wires_bg.png" id="2_28i2p"]
+
+[sub_resource type="GDScript" id="GDScript_28i2p"]
+script/source = "extends Node2D
+var cuts = []
+
+func add_cut(pos):
+	cuts.append(pos)
+	queue_redraw()
+
+func _draw():
+	for cut in cuts:
+		draw_circle(cut, 12, Color.BLACK)
+		draw_line(cut + Vector2(0, -15), cut + Vector2(0, 15), Color.RED, 4)
+"
+
+[node name="WireMiniGame" type="Node2D" unique_id=1501259523]
+script = ExtResource("1_3qq3a")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=819637202]
+position = Vector2(576, 324)
+
+[node name="CutMarks" type="Node2D" parent="." unique_id=525148209]
+script = SubResource("GDScript_28i2p")
+
+[node name="WireBG" type="TextureRect" parent="." unique_id=877241230]
+z_index = -10
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_28i2p")
+expand_mode = 1
+stretch_mode = 6

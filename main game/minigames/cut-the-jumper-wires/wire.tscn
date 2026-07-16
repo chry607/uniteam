@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cj2orsa33nri5"]
+
+[ext_resource type="Script" uid="uid://42tdg8jemae2" path="res://minigames/cut-the-jumper-wires/wire.gd" id="1_2s0x2"]
+
+[node name="Wire" type="Node2D" unique_id=1901943001]
+script = ExtResource("1_2s0x2")
