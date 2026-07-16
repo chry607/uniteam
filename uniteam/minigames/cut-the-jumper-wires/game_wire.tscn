@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://b2vdcp5lh0axa"]
 
 [ext_resource type="Script" uid="uid://bsqhmnrj6y2nj" path="res://minigames/cut-the-jumper-wires/game_wire.gd" id="1_3qq3a"]
+[ext_resource type="Texture2D" uid="uid://d0w5kujb14l7t" path="res://assets/wires-assets/wires_bg.png" id="2_28i2p"]
 
 [sub_resource type="GDScript" id="GDScript_28i2p"]
 script/source = "extends Node2D
@@ -24,3 +25,9 @@ position = Vector2(576, 324)
 
 [node name="CutMarks" type="Node2D" parent="." unique_id=525148209]
 script = SubResource("GDScript_28i2p")
+
+[node name="WireBG" type="TextureRect" parent="." unique_id=877241230]
+offset_right = 1157.0
+offset_bottom = 645.0
+texture = ExtResource("2_28i2p")
+expand_mode = 1
