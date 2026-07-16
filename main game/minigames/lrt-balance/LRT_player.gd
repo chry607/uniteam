@@ -5,7 +5,7 @@ var visual: Sprite2D
 var base_scale: Vector2 = Vector2(0.4, 0.4)
 
 func _init() -> void:
-	self.position = Vector2(640, 720) # Root acts as the pivot at the bottom center of the screen
+	self.position = Vector2(700, 780) # Root acts as the pivot at the bottom center of the screen
 	
 	# 2. Instantiate Sprite2D and load your PNG
 	visual = Sprite2D.new()

@@ -14,6 +14,7 @@ func _init() -> void:
 	bg.centered = false
 	add_child(bg)
 	original_bg_pos = bg.position
+	bg.scale = Vector2(1.2, 1.2)
 	
 	# 2. Crowd Left
 	crowd_left = Sprite2D.new()
@@ -26,7 +27,7 @@ func _init() -> void:
 	crowd_right = Sprite2D.new()
 	crowd_right.texture = preload("res://minigames/lrt-balance/lrt-crowd-right.png")
 	crowd_right.centered = false
-	crowd_right.position = Vector2(900, 220)
+	crowd_right.position = Vector2(800, 220)
 	bg.add_child(crowd_right)
 
 func shake() -> void:
