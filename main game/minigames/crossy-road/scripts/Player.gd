@@ -6,8 +6,10 @@ signal died
 
 const TILE_SIZE := 100
 const MOVE_TIME := 0.12
-const MIN_COL := -7 # Increased so you can walk to the very left edge
-const MAX_COL := 7  # Increased so you can walk to the very right edge
+const MIN_COL := -7
+const MAX_COL := 7
+
+var visual: Sprite2D
 
 var grid_x := 0
 var grid_y := 0
@@ -21,17 +23,16 @@ func _ready() -> void:
 	_build_visual()
 
 func _build_visual() -> void:
-	var body := ColorRect.new()
-	body.size = Vector2(56, 64)
-	body.position = Vector2(-28, -32)
-	body.color = Color8(255, 220, 80)
-	add_child(body)
+	visual = Sprite2D.new()
+	visual.texture = preload("res://minigames/crossy-road/scripts/crossy-player.png")
+	add_child(visual)
 
-	var hat := ColorRect.new()
-	hat.size = Vector2(66, 16)
-	hat.position = Vector2(-33, -40)
-	hat.color = Color8(50, 120, 200)
-	add_child(hat)
+	var raw_size = visual.texture.get_size()
+	var target_height: float = 85.0 
+	var scale_factor = target_height / raw_size.y
+	visual.scale = Vector2(scale_factor, scale_factor)
+	
+	visual.centered = true
 
 	var shape := RectangleShape2D.new()
 	shape.size = Vector2(50, 56)
@@ -55,15 +56,12 @@ func _unhandled_input(event: InputEvent) -> void:
 				_try_move(1, 0)
 
 func _try_move(dx: int, dy: int) -> void:
-	# Clamps strictly prevent the player from walking off the left/right screen edges
 	var new_x: int = clamp(grid_x + dx, MIN_COL, MAX_COL)
 	
-	# --- DYNAMIC FIX: Get the maximum allowed rows from the main scene ---
 	var final_row := 10
 	if get_parent() and "target_row" in get_parent():
 		final_row = get_parent().target_row
 		
-	# Clamps strictly prevent the player from walking past Start (0) or Finish
 	var new_y: int = clamp(grid_y + dy, -final_row, 0) 
 	
 	if new_x == grid_x and new_y == grid_y:
