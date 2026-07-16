@@ -109,7 +109,7 @@ func _on_challenge_finished(result: String) -> void:
 	else:
 		# 4. GAME OVER SEQUENCE
 		AudioController.stop_music()
-		AudioController.play_game
+		AudioController.play_game_done()
 		status_label.text = "GAME OVER\n\nFinal Score: " + str(Global.score)
 		score_label.hide()
 		lives_container.hide()
