@@ -1,9 +1,0 @@
-<<<<<<< HEAD
-# Godot 4+ specific ignores
-.godot/
-/android/
-=======
-.DS_Store
-.AppleDouble
-.LSOverride
->>>>>>> d2d902e3a767dced0706842c82d7fae4febacd4c

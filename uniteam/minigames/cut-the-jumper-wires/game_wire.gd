@@ -4,7 +4,7 @@ signal game_finished(result: String)
 
 enum State { WAITING, SHOWING, CUTTING, WON, LOST }
 var state = State.WAITING
-const WIRE_SCENE = preload("res://cut-the-jumper-wires/assets/wire.tscn")
+const WIRE_SCENE = preload("res://minigames/cut-the-jumper-wires/wire.tscn")
 
 @export var target_wire_count: int = 3
 @export var trap_wire_count: int = 8
@@ -28,6 +28,7 @@ const WIRE_SCENE = preload("res://cut-the-jumper-wires/assets/wire.tscn")
 	"Forgot which wire was red. Whoops.",
 	"Pulled the wire marked 'DO NOT PULL'.",
 	"Figured they were all the same really.",
+	"Ran out of time dithering around!"
 ]
 @export var win_messages: Array[String] = [
 	"Somehow didn't die today!",
@@ -40,15 +41,39 @@ const WIRE_SCENE = preload("res://cut-the-jumper-wires/assets/wire.tscn")
 var wires: Array = []
 var target_wires_remaining: int = 0
 
+# Timer / Speed Scaling Dependency
+@export var base_duration: float = 8.0
+var speed: float = 1.0
+var time_remaining: float = 0.0
+
+func setup_speed(speed_scale: float) -> void:
+	speed = speed_scale
+
 var _ui_layer: CanvasLayer
 var _message_label: Label
 var _hint_label: Label
 var _flash_rect: ColorRect
+var _timer_bar: TextureProgressBar
 
 func _ready():
 	_build_ui()
 	generate_wires()
 	start_sequence()
+
+func _process(delta: float):
+	if state == State.CUTTING:
+		time_remaining -= delta
+		
+		# Update visual timer bar
+		if _timer_bar:
+			var max_time = base_duration / speed
+			_timer_bar.value = (time_remaining / max_time) * 100.0
+			
+		# Time out check
+		if time_remaining <= 0.0:
+			time_remaining = 0.0
+			print("Time's up!")
+			lose()
 
 # --- Runtime UI (no .tscn edits needed) ---
 func _build_ui():
@@ -60,6 +85,30 @@ func _build_ui():
 	_flash_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_flash_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_ui_layer.add_child(_flash_rect)
+
+	# Visual Countdown Timer Bar
+	_timer_bar = TextureProgressBar.new()
+	_timer_bar.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	_timer_bar.offset_top = 20
+	_timer_bar.offset_left = 100
+	_timer_bar.offset_right = -100
+	_timer_bar.offset_bottom = 40
+	_timer_bar.nine_patch_stretch = true
+	_timer_bar.value = 100
+	_timer_bar.tint_progress = Color(0.2, 0.8, 0.2) # Starts green
+	
+	# Fallback colored textures for the bar
+	var img = Image.create(1, 1, false, Image.FORMAT_RGBA8)
+	img.fill(Color.WHITE)
+	var tex = ImageTexture.create_from_image(img)
+	_timer_bar.texture_progress = tex
+	
+	var bg_img = Image.create(1, 1, false, Image.FORMAT_RGBA8)
+	bg_img.fill(Color(0.1, 0.1, 0.1, 0.6))
+	_timer_bar.texture_under = ImageTexture.create_from_image(bg_img)
+	
+	_timer_bar.visible = false
+	_ui_layer.add_child(_timer_bar)
 
 	_message_label = Label.new()
 	_message_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -126,34 +175,41 @@ func random_edge_points(screen_size: Vector2) -> Array:
 
 func random_point_on_edge(edge: int, screen_size: Vector2) -> Vector2:
 	match edge:
-		0: return Vector2(randf_range(0, screen_size.x), 0)                # top
-		1: return Vector2(randf_range(0, screen_size.x), screen_size.y)    # bottom
-		2: return Vector2(0, randf_range(0, screen_size.y))                # left
-		3: return Vector2(screen_size.x, randf_range(0, screen_size.y))    # right
+		0: return Vector2(randf_range(0, screen_size.x), 0)                 # top
+		1: return Vector2(randf_range(0, screen_size.x), screen_size.y)     # bottom
+		2: return Vector2(0, randf_range(0, screen_size.y))                 # left
+		3: return Vector2(screen_size.x, randf_range(0, screen_size.y))     # right
 	return Vector2.ZERO
 
 func start_sequence():
 	state = State.WAITING
 	_message_label.text = ""
 	_hint_label.text = ""
+	_timer_bar.visible = false
+	
 	for w in wires:
 		w.hide_color()
-	await get_tree().create_timer(2).timeout
+	
+	await get_tree().create_timer(1.0 / speed).timeout
 
 	state = State.SHOWING
 	for w in wires:
 		w.show_color()
-	await get_tree().create_timer(2).timeout
+	
+	await get_tree().create_timer(1.5 / speed).timeout
 
 	for w in wires:
 		w.hide_color()
 	print("Color gone. Cut the RED wires!")
+	
+	# Start countdown timer phase
+	time_remaining = base_duration / speed
+	_timer_bar.visible = true
 	state = State.CUTTING
 
 func _unhandled_input(event):
-	# REMOVED the reload_current_scene() logic here!
 	if state == State.WON or state == State.LOST:
-		return # Do nothing, the Game Manager is handling the transition now.
+		return
 		
 	if state != State.CUTTING:
 		return
@@ -162,7 +218,6 @@ func _unhandled_input(event):
 		handle_click(get_global_mouse_position())
 
 func handle_click(mouse_pos: Vector2):
-	# Find the closest un-severed wire within tolerance
 	var best_wire = null
 	var best_distance = INF
 
@@ -193,6 +248,7 @@ func handle_click(mouse_pos: Vector2):
 
 func win():
 	state = State.WON
+	_timer_bar.visible = false
 	print("ALL RED WIRES CUT — YOU WIN!")
 	var msg = win_messages[randi() % win_messages.size()] if win_messages.size() > 0 else "YOU WIN!"
 	_show_end_message(msg, Color(0.3, 1.0, 0.3))
@@ -200,6 +256,7 @@ func win():
 
 func lose():
 	state = State.LOST
+	_timer_bar.visible = false
 	var msg = death_messages[randi() % death_messages.size()] if death_messages.size() > 0 else "ZZZAP!"
 	print("ZZZAP! Wrong wire — electrocuted! ", msg)
 	_show_end_message(msg, Color(1.0, 0.3, 0.3))
@@ -215,7 +272,6 @@ func _show_end_message(msg: String, color: Color):
 	var tw = create_tween()
 	tw.tween_property(_message_label, "scale", Vector2(1.15, 1.15), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(_message_label, "scale", Vector2.ONE, 0.1)
-	_hint_label.text = "Click to try again"
 
 func _flash_screen():
 	_flash_rect.color = Color(1, 0, 0, 0.6)

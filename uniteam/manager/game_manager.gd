@@ -5,11 +5,11 @@ extends Node2D
 @onready var status_label: Label = $UI/StatusLabel
 @onready var time_bar: ProgressBar = $UI/TimeBar
 
-# 1. Grab the reference to the new button
+# Grab the reference to the new button
 @onready var try_again_btn: Button = $UI/TryAgainButton
 
 var challenge_scenes: Array[PackedScene] = [
-	preload("res://cut-the-jumper-wires/assets/game.tscn"),
+	preload("res://minigames/cut-the-jumper-wires/game_wire.tscn"),
 	preload("res://crossy-road/Main.tscn"),
 	preload("res://lrt-balance/main.tscn")
 ]
@@ -28,7 +28,7 @@ var challenge_intros: Array[String] = [
 
 var current_challenge: Node = null
 
-# 2. Keep track of the last game played so we don't repeat it!
+# Keep track of the last game played
 var last_played_index: int = -1 
 
 func _ready() -> void:
@@ -46,7 +46,7 @@ func start_next_challenge() -> void:
 		current_challenge.queue_free()
 		current_challenge = null
 
-	# 3. ANTI-REPEAT LOGIC
+	# ANTI-REPEAT LOGIC
 	var index: int = randi() % challenge_scenes.size()
 	# If the new random game is the same as the last one, roll again!
 	while index == last_played_index:

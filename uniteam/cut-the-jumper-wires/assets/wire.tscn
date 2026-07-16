@@ -1,6 +1,0 @@
-[gd_scene format=3 uid="uid://dbwk37qlmfir7"]
-
-[ext_resource type="Script" uid="uid://dxp2svd4wtpb2" path="res://cut-the-jumper-wires/assets/wire.gd" id="1_0ai2n"]
-
-[node name="Wire" type="Node2D" unique_id=2046928713]
-script = ExtResource("1_0ai2n")
