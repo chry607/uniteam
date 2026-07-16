@@ -10,11 +10,9 @@ const WIRE_SCENE = preload("res://minigames/cut-the-jumper-wires/wire.tscn")
 @export var trap_wire_count: int = 8
 @export var trap_colors: Array[Color] = [Color.BLUE, Color.YELLOW, Color.GREEN, Color.PURPLE, Color.ORANGE]
 
-# NEW: art assignment — assign these in the Inspector on game.tscn
-@export var target_wire_texture: Texture2D          # the RED wire sprite
-@export var trap_wire_textures: Array[Texture2D] = [] # MUST be same length & order as trap_colors
+@export var target_wire_texture: Texture2D          
+@export var trap_wire_textures: Array[Texture2D] = [] 
 
-# --- "Dumb Ways to Die" style flavor text ---
 @export var death_messages: Array[String] = [
 	"Snipped the blue one for fun.",
 	"Decided yellow looked tastier.",
@@ -45,9 +43,13 @@ var target_wires_remaining: int = 0
 @export var base_duration: float = 8.0
 var speed: float = 1.0
 var time_remaining: float = 0.0
+var difficulty_level: int = 0
 
-func setup_speed(speed_scale: float) -> void:
-	speed = speed_scale
+func set_difficulty(level: int) -> void:
+	difficulty_level = clampi(level, 0, 5) # Capped at 5
+	speed = min(1.0 + (difficulty_level * 0.25), 2.25)
+	target_wire_count = min(3 + difficulty_level, 8)
+	trap_wire_count = min(8 + (difficulty_level * 2), 18)
 
 var _ui_layer: CanvasLayer
 var _message_label: Label
@@ -165,7 +167,6 @@ func spawn_wire(screen_size: Vector2, color: Color, is_target: bool, texture: Te
 	wire.setup(points[0], points[1], color, is_target, texture)
 	return wire
 
-# Picks 2 points on 2 DIFFERENT screen edges (top/bottom/left/right)
 func random_edge_points(screen_size: Vector2) -> Array:
 	var edges = [0, 1, 2, 3]
 	edges.shuffle()
@@ -175,10 +176,10 @@ func random_edge_points(screen_size: Vector2) -> Array:
 
 func random_point_on_edge(edge: int, screen_size: Vector2) -> Vector2:
 	match edge:
-		0: return Vector2(randf_range(0, screen_size.x), 0)                 # top
-		1: return Vector2(randf_range(0, screen_size.x), screen_size.y)     # bottom
-		2: return Vector2(0, randf_range(0, screen_size.y))                 # left
-		3: return Vector2(screen_size.x, randf_range(0, screen_size.y))     # right
+		0: return Vector2(randf_range(0, screen_size.x), 0)                 
+		1: return Vector2(randf_range(0, screen_size.x), screen_size.y)     
+		2: return Vector2(0, randf_range(0, screen_size.y))                 
+		3: return Vector2(screen_size.x, randf_range(0, screen_size.y))     
 	return Vector2.ZERO
 
 func start_sequence():
@@ -265,7 +266,6 @@ func lose():
 	_shake_camera()
 	game_finished.emit("lose")
 
-# --- "Dumb Ways to Die" flourishes ---
 func _show_end_message(msg: String, color: Color):
 	_message_label.text = msg
 	_message_label.add_theme_color_override("font_color", color)

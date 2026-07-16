@@ -8,9 +8,12 @@ var lanes := {}
 var game_over := false
 var won := false
 
-# Game rule constants
-var time_left := 20.0 # 12 seconds to survive/finish
-const TARGET_ROW := 10
+# Game rule variables (Dynamically set via difficulty)
+var time_left := 20.0 
+var target_row := 10
+var difficulty_level: int = 0
+var lane_speed_mult: float = 1.0
+var spawn_interval_mult: float = 1.0
 
 var player
 var camera: Camera2D
@@ -22,6 +25,13 @@ var lanes_label: Label
 var game_over_panel: Control
 var final_message_label: Label
 
+func set_difficulty(level: int) -> void:
+	difficulty_level = clampi(level, 0, 5) # Cap at 5
+	time_left = max(20.0 - (difficulty_level * 1.5), 12.5) # Minimum 12.5 seconds
+	target_row = min(10 + (difficulty_level * 2), 20) # Max 20 rows to cross
+	lane_speed_mult = 1.0 + (difficulty_level * 0.15) # Up to 75% faster cars
+	spawn_interval_mult = max(1.0 - (difficulty_level * 0.1), 0.5) # Cars spawn up to twice as fast
+
 func _ready() -> void:
 	AudioController.play_road_bg()
 	randomize()
@@ -29,8 +39,8 @@ func _ready() -> void:
 	_setup_camera()
 	_spawn_player()
 	
-	# Pre-generate lanes from row -2 (buffer behind player) up to 12 (buffer past finish line)
-	for i in range(-2, 13):
+	# Pre-generate lanes based on the dynamic target_row
+	for i in range(-2, target_row + 3):
 		_generate_lane(i)
 
 func _process(delta: float) -> void:
@@ -55,8 +65,8 @@ func _process(delta: float) -> void:
 		elif player.position.y > camera.position.y + deadzone:
 			target_y = player.position.y - deadzone
 			
-		# Keep camera from looking too far past start (100) or finish line (-1050)
-		target_y = clamp(target_y, -1050, 100)
+		# Dynamic camera bounding based on dynamic target row
+		target_y = clamp(target_y, -(target_row * TILE_SIZE) - 50, 100)
 		
 		# Smoothly follow Y, but lock X to 0 (NO sideways scrolling!)
 		camera.position.y = lerp(camera.position.y, target_y, 0.1)
@@ -71,7 +81,7 @@ func _build_ui() -> void:
 
 	# Top bar for Timer (Centered)
 	timer_label = Label.new()
-	timer_label.text = "TIME: 12.00s"
+	timer_label.text = "TIME: %.2fs" % time_left
 	timer_label.add_theme_font_size_override("font_size", 44)
 	timer_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	timer_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -81,7 +91,7 @@ func _build_ui() -> void:
 
 	# Lanes tracker (Top Left)
 	lanes_label = Label.new()
-	lanes_label.text = "Lanes: 0 / 10"
+	lanes_label.text = "Lanes: 0 / " + str(target_row)
 	lanes_label.add_theme_font_size_override("font_size", 28)
 	lanes_label.position = Vector2(30, 20)
 	canvas.add_child(lanes_label)
@@ -147,7 +157,7 @@ func _generate_lane(row: int) -> void:
 	lane.row = row
 	
 	# Start and end lanes are strictly SAFE.
-	if row <= 0 or row >= TARGET_ROW:
+	if row <= 0 or row >= target_row:
 		lane.lane_type = 0
 	else:
 		var roll := randf()
@@ -158,8 +168,9 @@ func _generate_lane(row: int) -> void:
 		else:
 			lane.lane_type = 1
 			lane.direction = 1 if randi() % 2 == 0 else -1
-			lane.speed = randf_range(130, 280) 
-			lane.spawn_interval = randf_range(0.8, 1.6)
+			# Scale speed and intervals!
+			lane.speed = randf_range(130, 280) * lane_speed_mult 
+			lane.spawn_interval = randf_range(0.8, 1.6) * spawn_interval_mult
 			lane.vehicle_types = [0, 1, 2, 3]
 	add_child(lane)
 	lanes[row] = lane
@@ -170,9 +181,9 @@ func _on_player_moved(row: int) -> void:
 	if won or game_over:
 		return
 		
-	lanes_label.text = "Lanes: %d / 10" % clampi(row, 0, TARGET_ROW)
+	lanes_label.text = "Lanes: %d / %d" % [clampi(row, 0, target_row), target_row]
 	
-	if row >= TARGET_ROW:
+	if row >= target_row:
 		# Wait for the exact duration of the player's movement animation
 		await get_tree().create_timer(player.MOVE_TIME).timeout
 		
@@ -185,7 +196,7 @@ func _on_player_died() -> void:
 		return
 	game_over = true
 	AudioController.stop_road_bg()
-	game_finished.emit("lose") # Tell the manager you died. NO PAUSING!
+	game_finished.emit("lose")
 
 func _on_time_out() -> void:
 	if game_over or won:

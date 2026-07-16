@@ -28,8 +28,9 @@ var challenge_intros: Array[String] = [
 
 var current_challenge: Node = null
 
-# Keep track of the last game played
+# Keep track of the last game played and difficulty scales
 var last_played_index: int = -1 
+var challenge_levels: Array[int] = [0, 0, 0] # Tracks difficulty for each of the 3 games
 
 func _ready() -> void:
 	# Wire up the Try Again button via code
@@ -60,6 +61,13 @@ func start_next_challenge() -> void:
 	current_challenge = selected_scene.instantiate()
 	current_challenge.name = "Challenge"
 
+	# DIFFICULTY SCALING: Pass the level before adding to the tree so _ready() uses new stats
+	if current_challenge.has_method("set_difficulty"):
+		current_challenge.set_difficulty(challenge_levels[index])
+	
+	# Increment the difficulty level for the next time this specific game is rolled
+	challenge_levels[index] += 1
+
 	if current_challenge.has_signal("game_finished"):
 		current_challenge.game_finished.connect(_on_challenge_finished)
 
@@ -74,8 +82,7 @@ func start_next_challenge() -> void:
 	await get_tree().create_timer(1.0).timeout
 	status_label.text = ""
 	
-	_hide_time_bar() # Replaced time_bar.show() to keep it strictly hidden!
-	# score_label.show()
+	_hide_time_bar() 
 	lives_container.show()
 
 func _on_challenge_finished(result: String) -> void:
@@ -126,19 +133,17 @@ func update_ui() -> void:
 		else:
 			life_icons[i].hide()
 
-# Helper method to force hide time_bar completely (visibility + alpha zeroed)
 func _hide_time_bar() -> void:
 	if time_bar:
 		time_bar.hide()
 		time_bar.visible = false
 		time_bar.modulate.a = 0.0
 
-# 5. RESTART LOGIC
 func _on_try_again_pressed() -> void:
 	AudioController.play_music()
 	# Reset global variables back to starting defaults
 	Global.score = 0
-	Global.lives = 3 # (Change this to whatever your starting max is!)
+	Global.lives = 3
 	
-	# Reload the entire Game Manager scene fresh
+	# Reloading the scene natively resets the challenge_levels array!
 	get_tree().reload_current_scene()

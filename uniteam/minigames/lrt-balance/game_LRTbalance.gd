@@ -2,10 +2,10 @@ extends Node2D
 
 signal game_finished(result: String)
 
-# --- Game Tuning Settings ---
+# --- Game Tuning Settings (Base values) ---
 var max_balance: float = 100.0
 var min_balance: float = 0.0
-var recovery_force: float = 12.0     
+var recovery_force: float = 12.0      
 var passive_drift: float = 10.0      
 var jerk_strength: float = 16.0
 
@@ -14,6 +14,7 @@ var balance: float = 50.0
 var train_jerk_force: float = 0.0
 var is_game_over: bool = false
 var is_won: bool = false
+var difficulty_level: int = 0 # Track local difficulty
 
 # --- Component References ---
 var environment
@@ -22,9 +23,18 @@ var ui
 var survival_timer: Timer
 var jerk_timer: Timer
 
+func set_difficulty(level: int) -> void:
+	# Cap difficulty at level 5 so it's always winnable
+	difficulty_level = clampi(level, 0, 5)
+	
+	# Scale variables based on difficulty
+	passive_drift = min(10.0 + (difficulty_level * 3.0), 25.0)
+	jerk_strength = min(16.0 + (difficulty_level * 2.0), 26.0)
+	recovery_force = max(12.0 - (difficulty_level * 0.5), 9.5)
+
 func _ready() -> void:
 	AudioController.play_cubao()
-	# 1. Instantiate Components (Pure Code, No Drag and Drop)
+	# 1. Instantiate Components
 	var environment_script = preload("res://minigames/lrt-balance/LRT_environment.gd")
 	environment = environment_script.new()
 	add_child(environment)
@@ -55,7 +65,6 @@ func _ready() -> void:
 	ui.tap_left.connect(_on_input_left)
 	ui.tap_right.connect(_on_input_right)
 
-
 func _process(delta: float) -> void:
 	if is_game_over or is_won: return
 
@@ -75,8 +84,6 @@ func _process(delta: float) -> void:
 	if balance <= min_balance or balance >= max_balance:
 		trigger_game_over()
 
-
-# --- INPUT HANDLING ---
 func _unhandled_input(event: InputEvent) -> void:
 	if is_game_over or is_won: return
 	if event is InputEventKey and event.is_pressed() and not event.is_echo():
@@ -97,8 +104,6 @@ func _on_input_right() -> void:
 	balance += recovery_force
 	player.squish_juice()
 
-
-# --- GAME EVENTS ---
 func trigger_game_over() -> void:
 	AudioController.play_train_crash()
 	AudioController.stop_cubao()
@@ -133,5 +138,8 @@ func _on_train_jerk_timer_timeout() -> void:
 	start_next_jerk()
 
 func start_next_jerk() -> void:
-	jerk_timer.wait_time = randf_range(1.0, 2.2)
+	# Jerks happen faster as difficulty increases
+	var min_time = max(1.0 - (difficulty_level * 0.1), 0.5)
+	var max_time = max(2.2 - (difficulty_level * 0.2), 1.2)
+	jerk_timer.wait_time = randf_range(min_time, max_time)
 	jerk_timer.start()
