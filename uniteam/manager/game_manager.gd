@@ -32,6 +32,9 @@ var current_challenge: Node = null
 var last_played_index: int = -1 
 var challenge_levels: Array[int] = [0, 0, 0] # Tracks difficulty for each of the 3 games
 
+# --- NEW: Holds the indices of the games remaining in the current block ---
+var challenge_bag: Array[int] = []
+
 func _ready() -> void:
 	# Wire up the Try Again button via code
 	try_again_btn.pressed.connect(_on_try_again_pressed)
@@ -48,13 +51,26 @@ func start_next_challenge() -> void:
 		current_challenge.queue_free()
 		current_challenge = null
 
-	# ANTI-REPEAT LOGIC
-	var index: int = randi() % challenge_scenes.size()
-	# If the new random game is the same as the last one, roll again!
-	while index == last_played_index:
-		index = randi() % challenge_scenes.size()
+	# --- DYNAMIC PLAYLIST SYSTEM ---
+	# If our playlist/bag is empty, refill it with [0, 1, 2] and shuffle it!
+	if challenge_bag.is_empty():
+		var new_bag: Array[int] = []
+		for i in range(challenge_scenes.size()):
+			new_bag.append(i)
+		new_bag.shuffle()
 		
-	# Save this index for the NEXT time we roll
+		# Transition Safeguard: If the first game in the new 3-game block is 
+		# the exact same as the last game of the previous block, swap it with
+		# the second game. This prevents a game playing twice in a row!
+		if last_played_index != -1 and new_bag.size() > 1 and new_bag[0] == last_played_index:
+			var temp = new_bag[0]
+			new_bag[0] = new_bag[1]
+			new_bag[1] = temp
+			
+		challenge_bag = new_bag
+
+	# Draw the next game from the front of our shuffled bag!
+	var index: int = challenge_bag.pop_front()
 	last_played_index = index 
 
 	var selected_scene: PackedScene = challenge_scenes[index]
@@ -145,5 +161,5 @@ func _on_try_again_pressed() -> void:
 	Global.score = 0
 	Global.lives = 3
 	
-	# Reloading the scene natively resets the challenge_levels array!
+	# Reloading the scene natively resets the challenge_levels and challenge_bag array!
 	get_tree().reload_current_scene()

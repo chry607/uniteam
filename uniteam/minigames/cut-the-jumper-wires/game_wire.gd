@@ -12,6 +12,14 @@ const WIRE_SCENE = preload("res://minigames/cut-the-jumper-wires/wire.tscn")
 
 @export var target_wire_texture: Texture2D          
 @export var trap_wire_textures: Array[Texture2D] = [] 
+\
+@export var memorize_duration: float = 2.5 
+@export var base_duration: float = 8.0      
+@export var base_target_wires: int = 3   
+var speed: float = 1.0
+var time_remaining: float = 0.0
+var difficulty_level: int = 0
+var active_game_duration: float = 8.0       # Tracks the scaled timer for the active level
 
 @export var death_messages: Array[String] = [
 	"Snipped the blue one for fun.",
@@ -39,17 +47,23 @@ const WIRE_SCENE = preload("res://minigames/cut-the-jumper-wires/wire.tscn")
 var wires: Array = []
 var target_wires_remaining: int = 0
 
-# Timer / Speed Scaling Dependency
-@export var base_duration: float = 8.0
-var speed: float = 1.0
-var time_remaining: float = 0.0
-var difficulty_level: int = 0
-
 func set_difficulty(level: int) -> void:
-	difficulty_level = clampi(level, 0, 5) # Capped at 5
-	speed = min(1.0 + (difficulty_level * 0.125), 2.25)
-	target_wire_count = min(3 + difficulty_level, 8)
-	trap_wire_count = min(8 + (difficulty_level * 2), 18)
+	difficulty_level = clampi(level, 0, 100) # Uncapped to allow infinite scaling!
+	
+	# Rule 1: EVERY ROUND, make the time shorter
+	# Subtracts 0.75 seconds per level. It will never drop below a chaotic 3.0s floor limit.
+	active_game_duration = max(base_duration - (difficulty_level * 0.75), 3.0)
+	
+	# Rule 2: EVERY 3 ROUNDS, add 1 wire to be cut
+	# Level 0, 1, 2 = +0 | Level 3, 4, 5 = +1 | Level 6, 7, 8 = +2, etc.
+	var extra_wires := difficulty_level / 3
+	target_wire_count = base_target_wires + extra_wires
+	
+	# Prevent spawning more target wires than screen space allows
+	target_wire_count = min(target_wire_count, 8)
+	
+	# Keep scaling up trap wires slightly so they don't get drowned out by target wires
+	trap_wire_count = min(8 + (difficulty_level * 1), 16)
 
 var _ui_layer: CanvasLayer
 var _message_label: Label
@@ -66,10 +80,9 @@ func _process(delta: float):
 	if state == State.CUTTING:
 		time_remaining -= delta
 		
-		# Update visual timer bar
+		# Update visual timer bar using active dynamically scaled game duration
 		if _timer_bar:
-			var max_time = base_duration / speed
-			_timer_bar.value = (time_remaining / max_time) * 100.0
+			_timer_bar.value = (time_remaining / active_game_duration) * 100.0
 			
 		# Time out check
 		if time_remaining <= 0.0:
@@ -191,23 +204,25 @@ func start_sequence():
 	for w in wires:
 		w.hide_color()
 	
-	await get_tree().create_timer(1.0 / speed).timeout
+	# Fixed quick delay before colors blink on screen (0.5s feels very natural)
+	await get_tree().create_timer(0.5).timeout
 
 	state = State.SHOWING
 	for w in wires:
 		w.show_color()
 	
-	await get_tree().create_timer(1.5 / speed).timeout
+	# --- Dynamic Fix: Uses your customizable memorize_duration variable ---
+	await get_tree().create_timer(memorize_duration).timeout
 
 	for w in wires:
 		w.hide_color()
 	print("Color gone. Cut the RED wires!")
 	
-	# Start countdown timer phase
-	time_remaining = base_duration / speed
+	# Start countdown timer phase using the dynamically scaled round time
+	time_remaining = active_game_duration
 	_timer_bar.visible = true
 	state = State.CUTTING
-
+	
 func _unhandled_input(event):
 	if state == State.WON or state == State.LOST:
 		return
