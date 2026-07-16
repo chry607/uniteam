@@ -10,7 +10,7 @@ extends Node2D
 
 var challenge_scenes: Array[PackedScene] = [
 	preload("res://minigames/cut-the-jumper-wires/game_wire.tscn"),
-	preload("res://crossy-road/Main.tscn"),
+	preload("res://minigames/crossy-road/Main.tscn"),
 	preload("res://minigames/lrt-balance/game_LRTbalance.tscn")
 ]
 
@@ -89,9 +89,11 @@ func _on_challenge_finished(result: String) -> void:
 	_hide_time_bar()
 	
 	if result == "win":
+		AudioController.play_round_win()
 		Global.score += 1
 		status_label.text = "SURVIVED!\n\n"
 	else:
+		AudioController.play_round_lose()
 		Global.lives -= 1
 		status_label.text = "YOU GOT HIT!\n\nLives Left: " + str(Global.lives)
 
@@ -106,6 +108,8 @@ func _on_challenge_finished(result: String) -> void:
 		start_next_challenge()
 	else:
 		# 4. GAME OVER SEQUENCE
+		AudioController.stop_music()
+		AudioController.play_game
 		status_label.text = "GAME OVER\n\nFinal Score: " + str(Global.score)
 		score_label.hide()
 		lives_container.hide()

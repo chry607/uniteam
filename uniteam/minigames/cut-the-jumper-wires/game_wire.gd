@@ -255,6 +255,7 @@ func win():
 	game_finished.emit("win")
 
 func lose():
+	AudioController.play_eshock()
 	state = State.LOST
 	_timer_bar.visible = false
 	var msg = death_messages[randi() % death_messages.size()] if death_messages.size() > 0 else "ZZZAP!"

@@ -23,6 +23,7 @@ var survival_timer: Timer
 var jerk_timer: Timer
 
 func _ready() -> void:
+	AudioController.play_cubao()
 	# 1. Instantiate Components (Pure Code, No Drag and Drop)
 	var environment_script = preload("res://minigames/lrt-balance/LRT_environment.gd")
 	environment = environment_script.new()
@@ -86,18 +87,23 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _on_input_left() -> void:
 	if is_game_over or is_won: return
+	AudioController.play_lrt_move()
 	balance -= recovery_force
 	player.squish_juice()
 
 func _on_input_right() -> void:
 	if is_game_over or is_won: return
+	AudioController.play_lrt_move()
 	balance += recovery_force
 	player.squish_juice()
 
 
 # --- GAME EVENTS ---
 func trigger_game_over() -> void:
+	AudioController.play_train_crash()
+	AudioController.stop_cubao()
 	if is_game_over or is_won:
+		AudioController.stop_cubao()
 		return
 	is_game_over = true
 	survival_timer.stop()
@@ -112,6 +118,7 @@ func _on_survival_timer_timeout() -> void:
 	is_won = true
 	jerk_timer.stop()
 	
+	AudioController.stop_cubao()
 	ui.show_victory()
 	player.celebrate_win()
 	game_finished.emit("win")
