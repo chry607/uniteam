@@ -141,6 +141,7 @@ func _hide_time_bar() -> void:
 
 func _on_try_again_pressed() -> void:
 	# Reset global variables back to starting defaults
+	AudioController.play_music()
 	Global.score = 0
 	Global.lives = 3
 	
