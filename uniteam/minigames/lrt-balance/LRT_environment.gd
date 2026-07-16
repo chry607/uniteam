@@ -1,8 +1,8 @@
 class_name TrainEnvironment extends Node2D
 
 var bg: ColorRect
-var crowd_left: ColorRect # Kept as ColorRect
-var crowd_right: Sprite2D # Changed to Sprite2D
+var crowd_left: Sprite2D # Changed to Sprite2D
+var crowd_right: Sprite2D 
 var original_bg_pos: Vector2
 
 func _init() -> void:
@@ -13,16 +13,16 @@ func _init() -> void:
 	add_child(bg)
 	original_bg_pos = bg.position
 	
-	# 2. Crowd Left (Kept as the original black rectangle)
-	crowd_left = ColorRect.new()
-	crowd_left.color = Color(0.1, 0.1, 0.1)
-	crowd_left.set_size(Vector2(300, 500))
-	crowd_left.position = Vector2(0, 220)
+	# 2. Crowd Left (Now loads your custom left PNG)
+	crowd_left = Sprite2D.new()
+	# Double check this path matches your actual file name!
+	crowd_left.texture = preload("res://minigames/lrt-balance/lrt-crowd-left.png")
+	crowd_left.centered = false
+	crowd_left.position = Vector2(-40, 220)
 	bg.add_child(crowd_left)
 	
-	# 3. Crowd Right (Now loads your custom PNG)
+	# 3. Crowd Right
 	crowd_right = Sprite2D.new()
-	# REPLACE this path with your actual crowd PNG file path if it's different!
 	crowd_right.texture = preload("res://minigames/lrt-balance/lrt-crowd-right.png")
 	crowd_right.centered = false
 	crowd_right.position = Vector2(900, 220)
